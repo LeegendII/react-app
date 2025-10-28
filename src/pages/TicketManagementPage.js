@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { AuthUtils, ApiUtils, ValidationUtils, DateUtils, ToastUtils } from '../utils';
 
@@ -22,7 +22,35 @@ const TicketManagementPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const loadTickets = useCallback(() => {
+  useEffect(() => {
+    // Check if user is authenticated
+    if (!AuthUtils.isAuthenticated()) {
+      ToastUtils.error('Your session has expired. Please log in again.');
+      navigate('/auth/login');
+      return;
+    }
+    
+    // Load tickets
+    loadTickets();
+  }, [navigate]);
+  
+  useEffect(() => {
+    // Handle ticket ID parameter
+    if (id) {
+      loadTicket(id);
+    } else {
+      setTicket(null);
+      setIsEditing(false);
+      setIsCreating(false);
+    }
+  }, [id, loadTicket]);
+  
+  useEffect(() => {
+    // Apply filter
+    applyFilter();
+  }, [tickets, filter, applyFilter]);
+  
+  const loadTickets = () => {
     try {
       const allTickets = ApiUtils.getTickets();
       setTickets(allTickets);
@@ -31,9 +59,9 @@ const TicketManagementPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
   
-  const loadTicket = useCallback((ticketId) => {
+  const loadTicket = (ticketId) => {
     try {
       const ticketData = ApiUtils.getTicket(ticketId);
       if (ticketData) {
@@ -52,43 +80,15 @@ const TicketManagementPage = () => {
       ToastUtils.error('Failed to load ticket details. Please try again.');
       navigate('/tickets');
     }
-  }, [navigate]);
+  };
   
-  const applyFilter = useCallback(() => {
+  const applyFilter = () => {
     if (filter === 'all') {
       setFilteredTickets(tickets);
     } else {
       setFilteredTickets(tickets.filter(ticket => ticket.status === filter));
     }
-  }, [tickets, filter]);
-  
-  useEffect(() => {
-    // Check if user is authenticated
-    if (!AuthUtils.isAuthenticated()) {
-      ToastUtils.error('Your session has expired. Please log in again.');
-      navigate('/auth/login');
-      return;
-    }
-    
-    // Load tickets
-    loadTickets();
-  }, [navigate, loadTickets]);
-  
-  useEffect(() => {
-    // Handle ticket ID parameter
-    if (id) {
-      loadTicket(id);
-    } else {
-      setTicket(null);
-      setIsEditing(false);
-      setIsCreating(false);
-    }
-  }, [id, loadTicket]);
-  
-  useEffect(() => {
-    // Apply filter
-    applyFilter();
-  }, [tickets, filter, applyFilter]);
+  };
   
   const handleFilterChange = (e) => {
     setFilter(e.target.value);

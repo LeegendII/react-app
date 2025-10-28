@@ -2,30 +2,25 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Single Page App for GitHub Pages</title>
+    <title>Redirecting to the app...</title>
     <script type="text/javascript">
       // Single Page Apps for GitHub Pages
       // MIT License
       // https://github.com/rafgraph/spa-github-pages
-      // This script takes the current url and converts the path and query
-      // string into just a query string, and then redirects the browser
-      // to the new url with only a query string and hash fragment,
-      // e.g. http://www.foo.tld/one/two?a=b&c=d#qwe, becomes
-      // http://www.foo.tld/?p=/one/two&q=a=b~and~c=d#qwe
-      // See https://github.com/rafgraph/spa-github-pages#usage for more info.
-
-      (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) { 
-            return s.replace(/~and~/g, '&')
-          }).join('?');
-          window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
-          );
-        }
-      }(window.location))
+      // This script checks if the page is being loaded directly (not through the app)
+      // and redirects to the home page with the original path as a hash parameter
+      
+      var path = window.location.pathname;
+      var hash = window.location.hash;
+      
+      // If the path is not the root and there's no hash, redirect to the root with the path as hash
+      if (path !== '/' && !hash) {
+        window.location.replace('/#' + path);
+      }
     </script>
   </head>
   <body>
+    <h1>Redirecting to the app...</h1>
+    <p>If you are not redirected automatically, please <a href="/">click here</a>.</p>
   </body>
 </html>
