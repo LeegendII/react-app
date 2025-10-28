@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
@@ -10,7 +10,7 @@ import ToastContainer from './components/ui/ToastContainer';
 
 function App() {
   return (
-    <Router basename="/react-app">
+    <Router>
       <div className="App">
         <Routes>
           <Route path="/" element={<LandingPage />} />
