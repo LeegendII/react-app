@@ -10,7 +10,7 @@ import ToastContainer from './components/ui/ToastContainer';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/react-app">
       <div className="App">
         <Routes>
           <Route path="/" element={<LandingPage />} />
