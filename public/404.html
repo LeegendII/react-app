@@ -15,12 +15,12 @@
       
       // If the path is not the root and there's no hash, redirect to the root with the path as hash
       if (path !== '/' && !hash) {
-        window.location.replace('/#' + path);
+        window.location.replace('/react-app/#' + path);
       }
     </script>
   </head>
   <body>
     <h1>Redirecting to the app...</h1>
-    <p>If you are not redirected automatically, please <a href="/">click here</a>.</p>
+    <p>If you are not redirected automatically, please <a href="/react-app/">click here</a>.</p>
   </body>
 </html>
