@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Redirecting to the app...</title>
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // MIT License
+      // https://github.com/rafgraph/spa-github-pages
+      // This script checks if the page is being loaded directly (not through the app)
+      // and redirects to the home page with the original path as a hash parameter
+      
+      var path = window.location.pathname;
+      var hash = window.location.hash;
+      
+      // If the path is not the root and there's no hash, redirect to the root with the path as hash
+      if (path !== '/' && !hash) {
+        window.location.replace('/react-app/#' + path);
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Redirecting to the app...</h1>
+    <p>If you are not redirected automatically, please <a href="/react-app/">click here</a>.</p>
+  </body>
+</html>
