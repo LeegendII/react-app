@@ -1,0 +1,22 @@
+name: Configure GitHub Pages
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  configure-pages:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+    - name: Configure GitHub Pages
+      uses: actions/configure-pages@v3
+      with:
+        # Automatically configure GitHub Pages to use the gh-pages branch
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        # Set the source branch to gh-pages
+        source_branch: gh-pages
+        # Set the source directory to root
+        source_dir: /
