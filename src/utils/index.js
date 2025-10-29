@@ -53,8 +53,13 @@ export const AuthUtils = {
       email
     };
     
-    AuthUtils.setSession(newUser);
-    return { success: true, user: newUser };
+    try {
+      AuthUtils.setSession(newUser);
+      return { success: true, user: newUser };
+    } catch (error) {
+      console.error('Error during signup:', error);
+      return { success: false, message: 'Signup failed. Please try again.' };
+    }
   }
 };
 
@@ -104,9 +109,31 @@ export const ValidationUtils = {
     return value.length <= max;
   },
 
-  // Validate ticket status
+  // Validate ticket status - strictly enforce required values
   isValidStatus: (status) => {
-    return ['open', 'in_progress', 'closed'].includes(status);
+    const validStatuses = ['open', 'in_progress', 'closed'];
+    return validStatuses.includes(status);
+  },
+
+  // Validate priority
+  isValidPriority: (priority) => {
+    const validPriorities = ['low', 'medium', 'high'];
+    return validPriorities.includes(priority);
+  },
+
+  // Validate title (required field with length check)
+  isValidTitle: (title) => {
+    return ValidationUtils.isRequired(title) &&
+           ValidationUtils.minLength(title, 1) &&
+           ValidationUtils.maxLength(title, 200);
+  },
+
+  // Validate description (optional with length check)
+  isValidDescription: (description) => {
+    if (!ValidationUtils.isRequired(description)) {
+      return true; // Optional field
+    }
+    return ValidationUtils.maxLength(description, 1000);
   }
 };
 

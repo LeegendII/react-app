@@ -10,18 +10,19 @@ const LandingPage = () => {
           <div className="hero-content">
             <div className="decoration-circle decoration-circle-1"></div>
             <div className="decoration-circle decoration-circle-2"></div>
+            <div className="decoration-circle decoration-circle-3"></div>
             
             <h1 className="text-center mb-4">Ticket Management System</h1>
             <p className="text-center mb-5" style={{ maxWidth: '700px', margin: '0 auto 2rem' }}>
-              Streamline your workflow with our powerful ticket management solution. 
+              Streamline your workflow with our powerful ticket management solution.
               Track, prioritize, and resolve issues efficiently to keep your team productive.
             </p>
             
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-              <Link to="/auth/login" className="btn btn-light btn-lg">
+              <Link to="/auth/login" className="btn btn-light btn-lg" aria-label="Login to your account">
                 Login
               </Link>
-              <Link to="/auth/signup" className="btn btn-primary btn-lg">
+              <Link to="/auth/signup" className="btn btn-primary btn-lg" aria-label="Create a new account">
                 Get Started
               </Link>
             </div>

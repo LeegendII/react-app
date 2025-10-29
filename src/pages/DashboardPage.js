@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthUtils, ApiUtils, DateUtils, ToastUtils } from '../utils';
+import Navigation from '../components/ui/Navigation';
+import Footer from '../components/ui/Footer';
 
 const DashboardPage = () => {
   const [stats, setStats] = useState({
@@ -13,19 +15,7 @@ const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   
-  useEffect(() => {
-    // Check if user is authenticated
-    if (!AuthUtils.isAuthenticated()) {
-      ToastUtils.error('Your session has expired. Please log in again.');
-      navigate('/auth/login');
-      return;
-    }
-    
-    // Load dashboard data
-    loadDashboardData();
-  }, [navigate]);
-  
-  const loadDashboardData = () => {
+  const loadDashboardData = useCallback(() => {
     try {
       // Get ticket statistics
       const ticketStats = ApiUtils.getTicketStats();
@@ -42,15 +32,25 @@ const DashboardPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
   
-  const handleLogout = () => {
-    AuthUtils.clearSession();
-    ToastUtils.success('You have been logged out successfully.');
-    navigate('/');
-  };
+  useEffect(() => {
+    // Check if user is authenticated
+    const isAuth = AuthUtils.isAuthenticated();
+    const session = AuthUtils.getSession();
+    console.log('Dashboard - Auth check:', { isAuth, session });
+    
+    if (!isAuth) {
+      ToastUtils.error('Your session has expired. Please log in again.');
+      navigate('/auth/login');
+      return;
+    }
+    
+    // Load dashboard data
+    loadDashboardData();
+  }, [navigate, loadDashboardData]);
   
-  const getStatusBadgeClass = (status) => {
+  const getStatusBadgeClass = useCallback((status) => {
     switch (status) {
       case 'open':
         return 'badge-success';
@@ -61,9 +61,9 @@ const DashboardPage = () => {
       default:
         return 'badge-secondary';
     }
-  };
+  }, []);
   
-  const getStatusText = (status) => {
+  const getStatusText = useCallback((status) => {
     switch (status) {
       case 'open':
         return 'Open';
@@ -74,55 +74,14 @@ const DashboardPage = () => {
       default:
         return status;
     }
-  };
+  }, []);
   
   const user = AuthUtils.getSession();
   
   return (
     <div>
       {/* Navigation */}
-      <nav style={{ 
-        backgroundColor: 'var(--white)', 
-        boxShadow: 'var(--shadow-md)',
-        padding: '1rem 0',
-        position: 'sticky',
-        top: '0',
-        zIndex: '100'
-      }}>
-        <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Ticket Management</div>
-            
-            <ul style={{ 
-              display: 'flex', 
-              listStyle: 'none',
-              margin: '0',
-              padding: '0',
-              alignItems: 'center'
-            }}>
-              <li style={{ marginRight: '1.5rem' }}>
-                <Link to="/dashboard" style={{ 
-                  color: 'var(--primary-color)',
-                  fontWeight: '500',
-                  textDecoration: 'none'
-                }}>Dashboard</Link>
-              </li>
-              <li style={{ marginRight: '1.5rem' }}>
-                <Link to="/tickets" style={{ 
-                  color: 'var(--text-secondary)',
-                  fontWeight: '500',
-                  textDecoration: 'none'
-                }}>Tickets</Link>
-              </li>
-              <li>
-                <button onClick={handleLogout} className="btn btn-danger btn-sm">
-                  Logout
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
       
       {/* Main Content */}
       <div className="container">
@@ -270,6 +229,8 @@ const DashboardPage = () => {
           </>
         )}
       </div>
+      
+      <Footer />
       
       <style>{`
         @keyframes spin {

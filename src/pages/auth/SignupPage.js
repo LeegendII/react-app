@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthUtils, ToastUtils, ValidationUtils } from '../../utils';
+import Footer from '../../components/ui/Footer';
 
 const SignupPage = () => {
   const [name, setName] = useState('');
@@ -24,6 +25,10 @@ const SignupPage = () => {
     
     if (!ValidationUtils.isRequired(name)) {
       newErrors.name = 'Name is required';
+    } else if (!ValidationUtils.minLength(name, 2)) {
+      newErrors.name = 'Name must be at least 2 characters';
+    } else if (!ValidationUtils.maxLength(name, 50)) {
+      newErrors.name = 'Name must be less than 50 characters';
     }
     
     if (!ValidationUtils.isRequired(email)) {
@@ -36,6 +41,8 @@ const SignupPage = () => {
       newErrors.password = 'Password is required';
     } else if (!ValidationUtils.minLength(password, 6)) {
       newErrors.password = 'Password must be at least 6 characters';
+    } else if (!ValidationUtils.maxLength(password, 100)) {
+      newErrors.password = 'Password must be less than 100 characters';
     }
     
     if (!ValidationUtils.isRequired(confirmPassword)) {
@@ -58,15 +65,19 @@ const SignupPage = () => {
     setIsLoading(true);
     
     try {
+      console.log('Signup attempt:', { name, email });
       const result = AuthUtils.signup(name, email, password);
+      console.log('Signup result:', result);
       
       if (result.success) {
         ToastUtils.success('Account created successfully!');
+        console.log('Navigating to dashboard...');
         navigate('/dashboard', { replace: true });
       } else {
         ToastUtils.error(result.message);
       }
     } catch (error) {
+      console.error('Signup error:', error);
       ToastUtils.error('An error occurred during signup. Please try again.');
     } finally {
       setIsLoading(false);
@@ -174,6 +185,8 @@ const SignupPage = () => {
           </div>
         </div>
       </div>
+      
+      <Footer />
       
       <style>{`
         @keyframes spin {

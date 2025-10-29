@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { AuthUtils, ApiUtils, ValidationUtils, DateUtils, ToastUtils } from '../utils';
+import Navigation from '../components/ui/Navigation';
+import Footer from '../components/ui/Footer';
 
 const TicketManagementPage = () => {
   const [tickets, setTickets] = useState([]);
@@ -22,6 +24,17 @@ const TicketManagementPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
+  const loadTickets = useCallback(() => {
+    try {
+      const allTickets = ApiUtils.getTickets();
+      setTickets(allTickets);
+    } catch (error) {
+      ToastUtils.error('Failed to load tickets. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+  
   useEffect(() => {
     // Check if user is authenticated
     if (!AuthUtils.isAuthenticated()) {
@@ -32,36 +45,9 @@ const TicketManagementPage = () => {
     
     // Load tickets
     loadTickets();
-  }, [navigate]);
+  }, [navigate, loadTickets]);
   
-  useEffect(() => {
-    // Handle ticket ID parameter
-    if (id) {
-      loadTicket(id);
-    } else {
-      setTicket(null);
-      setIsEditing(false);
-      setIsCreating(false);
-    }
-  }, [id, loadTicket]);
-  
-  useEffect(() => {
-    // Apply filter
-    applyFilter();
-  }, [tickets, filter, applyFilter]);
-  
-  const loadTickets = () => {
-    try {
-      const allTickets = ApiUtils.getTickets();
-      setTickets(allTickets);
-    } catch (error) {
-      ToastUtils.error('Failed to load tickets. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const loadTicket = (ticketId) => {
+  const loadTicket = useCallback((ticketId) => {
     try {
       const ticketData = ApiUtils.getTicket(ticketId);
       if (ticketData) {
@@ -80,15 +66,31 @@ const TicketManagementPage = () => {
       ToastUtils.error('Failed to load ticket details. Please try again.');
       navigate('/tickets');
     }
-  };
+  }, [navigate]);
   
-  const applyFilter = () => {
+  useEffect(() => {
+    // Handle ticket ID parameter
+    if (id) {
+      loadTicket(id);
+    } else {
+      setTicket(null);
+      setIsEditing(false);
+      setIsCreating(false);
+    }
+  }, [id, loadTicket]);
+  
+  const applyFilter = useCallback(() => {
     if (filter === 'all') {
       setFilteredTickets(tickets);
     } else {
       setFilteredTickets(tickets.filter(ticket => ticket.status === filter));
     }
-  };
+  }, [tickets, filter]);
+  
+  useEffect(() => {
+    // Apply filter
+    applyFilter();
+  }, [applyFilter]);
   
   const handleFilterChange = (e) => {
     setFilter(e.target.value);
@@ -107,12 +109,26 @@ const TicketManagementPage = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!ValidationUtils.isRequired(formData.title)) {
-      newErrors.title = 'Title is required';
+    if (!ValidationUtils.isValidTitle(formData.title)) {
+      if (!ValidationUtils.isRequired(formData.title)) {
+        newErrors.title = 'Title is required';
+      } else if (!ValidationUtils.minLength(formData.title, 1)) {
+        newErrors.title = 'Title must be at least 1 character';
+      } else if (!ValidationUtils.maxLength(formData.title, 200)) {
+        newErrors.title = 'Title must be less than 200 characters';
+      }
     }
     
     if (!ValidationUtils.isValidStatus(formData.status)) {
-      newErrors.status = 'Please select a valid status';
+      newErrors.status = 'Status must be one of: open, in_progress, or closed';
+    }
+    
+    if (formData.priority && !ValidationUtils.isValidPriority(formData.priority)) {
+      newErrors.priority = 'Priority must be one of: low, medium, or high';
+    }
+    
+    if (!ValidationUtils.isValidDescription(formData.description)) {
+      newErrors.description = 'Description must be less than 1000 characters';
     }
     
     setErrors(newErrors);
@@ -248,48 +264,7 @@ const TicketManagementPage = () => {
   return (
     <div>
       {/* Navigation */}
-      <nav style={{ 
-        backgroundColor: 'var(--white)', 
-        boxShadow: 'var(--shadow-md)',
-        padding: '1rem 0',
-        position: 'sticky',
-        top: '0',
-        zIndex: '100'
-      }}>
-        <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Ticket Management</div>
-            
-            <ul style={{ 
-              display: 'flex', 
-              listStyle: 'none',
-              margin: '0',
-              padding: '0',
-              alignItems: 'center'
-            }}>
-              <li style={{ marginRight: '1.5rem' }}>
-                <Link to="/dashboard" style={{ 
-                  color: 'var(--text-secondary)',
-                  fontWeight: '500',
-                  textDecoration: 'none'
-                }}>Dashboard</Link>
-              </li>
-              <li style={{ marginRight: '1.5rem' }}>
-                <Link to="/tickets" style={{ 
-                  color: 'var(--primary-color)',
-                  fontWeight: '500',
-                  textDecoration: 'none'
-                }}>Tickets</Link>
-              </li>
-              <li>
-                <button onClick={() => { AuthUtils.clearSession(); navigate('/'); }} className="btn btn-danger btn-sm">
-                  Logout
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
       
       {/* Main Content */}
       <div className="container">
@@ -479,28 +454,46 @@ const TicketManagementPage = () => {
             
             {/* Delete Confirmation Modal */}
             {isDeleting && ticket && (
-              <div className="card position-fixed" style={{ 
-                top: '50%', 
-                left: '50%', 
-                transform: 'translate(-50%, -50%)', 
-                zIndex: 1000,
-                minWidth: '400px'
-              }}>
-                <div className="card-header">
-                  <h3 style={{ margin: '0' }}>Confirm Delete</h3>
-                </div>
-                <div className="card-body">
-                  <p>Are you sure you want to delete the ticket "{ticket.title}"? This action cannot be undone.</p>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                    <button onClick={cancelDelete} className="btn btn-secondary">
-                      Cancel
-                    </button>
-                    <button onClick={confirmDelete} className="btn btn-danger">
-                      Delete Ticket
-                    </button>
+              <>
+                {/* Overlay */}
+                <div
+                  style={{
+                    position: 'fixed',
+                    top: '0',
+                    left: '0',
+                    right: '0',
+                    bottom: '0',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    zIndex: 999
+                  }}
+                  onClick={cancelDelete}
+                ></div>
+                
+                {/* Modal */}
+                <div className="card position-fixed" style={{
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 1000,
+                  minWidth: '400px',
+                  maxWidth: '90%'
+                }}>
+                  <div className="card-header">
+                    <h3 style={{ margin: '0' }}>Confirm Delete</h3>
+                  </div>
+                  <div className="card-body">
+                    <p>Are you sure you want to delete the ticket "{ticket.title}"? This action cannot be undone.</p>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                      <button onClick={cancelDelete} className="btn btn-secondary">
+                        Cancel
+                      </button>
+                      <button onClick={confirmDelete} className="btn btn-danger">
+                        Delete Ticket
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </>
             )}
             
             {/* Tickets List */}
@@ -601,6 +594,8 @@ const TicketManagementPage = () => {
           </>
         )}
       </div>
+      
+      <Footer />
       
       <style>{`
         @keyframes spin {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthUtils, ToastUtils, ValidationUtils } from '../../utils';
+import Footer from '../../components/ui/Footer';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -30,6 +31,8 @@ const LoginPage = () => {
     
     if (!ValidationUtils.isRequired(password)) {
       newErrors.password = 'Password is required';
+    } else if (!ValidationUtils.minLength(password, 6)) {
+      newErrors.password = 'Password must be at least 6 characters';
     }
     
     setErrors(newErrors);
@@ -137,6 +140,8 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

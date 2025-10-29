@@ -5,7 +5,7 @@ const ToastContainer = () => {
 
   useEffect(() => {
     const handleShowToast = (event) => {
-      const { message, type, duration } = event.detail;
+      const { message, type, duration = 5000 } = event.detail;
       
       const newToast = {
         id: Date.now(),
@@ -36,11 +36,12 @@ const ToastContainer = () => {
   return (
     <div className="toast-container">
       {toasts.map(toast => (
-        <div key={toast.id} className={`toast toast-${toast.type}`}>
+        <div key={toast.id} className={`toast toast-${toast.type}`} role="alert" aria-live="assertive">
           <div className="toast-body">{toast.message}</div>
-          <button 
-            className="toast-close" 
+          <button
+            className="toast-close"
             onClick={() => removeToast(toast.id)}
+            aria-label="Close notification"
           >
             &times;
           </button>
